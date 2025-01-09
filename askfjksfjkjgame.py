@@ -7,7 +7,7 @@ class Player:
         self.gold = gold
         self.maxHp = hp
         self.level = 0
-        self.maxXp = 30
+        self.maxXp = 20
         self.location = 0
         self.fightingEnemy = None
         self.weapons = []
@@ -142,6 +142,13 @@ while hasGameEnded == False:
                 player.xp += player.fightingEnemy.xpReward
                 player.gold += player.fightingEnemy.goldReward
                 inCombat = False
+                if player.xp >= player.maxXp:
+                    player.xp -= player.maxXp
+                    player.level += 1
+                    print("You've reached level " + str(player.level) + "! Your health has been refilled\n+10 max hp\n+10 gold\n")
+                    player.maxHp += 10
+                    player.hp = player.maxHp
+                    player.gold += 10
         elif playerInput in potionInputs:
             player.Heal(player.potions[int(playerInput) - len(player.weapons)].healPoints)
             print("You drink your " + player.potions[int(playerInput) - len(player.weapons)].name + " and heal " + str(player.potions[int(playerInput) - len(player.weapons)].healPoints) + " hp!\n")
