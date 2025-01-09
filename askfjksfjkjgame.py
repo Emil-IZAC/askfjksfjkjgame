@@ -61,7 +61,7 @@ class Potion(Object):
         print("using potion")
 
 class Enemy:
-    def __init__(self, name, hp, xpReward, goldReward, damage):
+    def __init__(self, name, hp, xpReward, goldReward, damage, hitProbability):
         self.name = name
         self.hp = hp
         self.xpReward = xpReward
@@ -69,6 +69,7 @@ class Enemy:
         self.maxHp = hp
         self.flavorText = ""
         self.damage = damage
+        self.hitProbability = hitProbability
     
     def Heal(self, hp):
         self.hp += hp
@@ -85,15 +86,15 @@ player.weapons = [Weapon("fist", 1)]
 
 location1 = Location("forest entrance", 0, [1], [NPC("Maurice")], [], [])
 location1.description = "\nYou find yourself at the entrance of the Darkwood forest, a bearded man waves his arm at you. What do you do?\n"
-location2 = Location("forest", 1, [0, 2, 3], [], [], [Enemy("Wolf", 5, 10, 2, 3), Enemy("Ghost", 4, 8, 3, 2)])
+location2 = Location("forest", 1, [0, 2, 3], [], [], [Enemy("Wolf", 5, 10, 2, 3, 0.75), Enemy("Ghost", 4, 8, 3, 2, 0.6)])
 location2.description = "\nYou find yourself deep into the Darkwood forest, a few evil creatures populate the place. What do you do?\n"
 location3 = Location("glade", 2, [1], [], [Potion("mega health potion", 20)], [])
 location3.description = "\nYou find yourself in an isolated glade, with an empty well in the middle. Something shiny catches your eye on the side of the well. What do you do?\n"
 location4 = Location("village", 3, [1, 4], [NPC("Eugene"), NPC("Bernard")], [Potion("health potion", 10)], [])
 location4.description = "\nYou find yourself in a small village full of townspeople greeting you. What do you do?\n"
-location5 = Location("dungeon entrance", 4, [3, 5], [], [Potion("health potion", 10)], [Enemy("Evil Wizard", 10, 20, 8, 5)])
+location5 = Location("dungeon entrance", 4, [3, 5], [], [Potion("health potion", 10)], [Enemy("Evil Wizard", 10, 20, 8, 5, 0.8)])
 location5.description = "\nYou find yourself at the entrance of the Darkwood dungeon, a few menacing creatures guard the way. What do you do?\n"
-location6 = Location("dungeon", 5, [4], [], [], [Enemy("Slime Blob", 20, 15, 10, 8), Enemy("Giant Spider", 12, 25, 15, 6), Enemy("Zombie", 15, 18, 12, 7), Enemy("Dragon", 50, 50, 50, 10)])
+location6 = Location("dungeon", 5, [4], [], [], [Enemy("Slime Blob", 20, 15, 10, 8, 0.5), Enemy("Giant Spider", 12, 25, 15, 6, 0.9), Enemy("Zombie", 15, 18, 12, 7, 0.55), Enemy("Dragon", 50, 50, 50, 10, 0.8)])
 location6.description = "\nYou find yourself deep inside the Darkwood dungeon, many creatures threatening to attack you. What do you do?\n"
 locations = [location1, location2, location3, location4, location5, location6]
 
@@ -150,11 +151,14 @@ while hasGameEnded == False:
         
         if inCombat:
             print("The " + player.fightingEnemy.name + " attacks:\n")
-            print("You take " + str(player.fightingEnemy.damage) + " points of damage!\n")
-            player.Hit(player.fightingEnemy.damage)
-            if player.hp == 0:
-                print("You were slain...")
-                hasGameEnded = True
+            if random.randint(0, 100) < player.fightingEnemy.hitProbability * 100:
+                print("You take " + str(player.fightingEnemy.damage) + " points of damage!\n")
+                player.Hit(player.fightingEnemy.damage)
+                if player.hp == 0:
+                    print("You were slain...")
+                    hasGameEnded = True
+            else:
+                print("It misses!\n")
         
     else:
         print(currentLocation.description)
