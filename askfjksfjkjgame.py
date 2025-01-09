@@ -94,7 +94,7 @@ location4 = Location("village", 3, [1, 4], [NPC("Eugene"), NPC("Bernard")], [Pot
 location4.description = "\nYou find yourself in a small village full of townspeople greeting you. What do you do?\n"
 location5 = Location("dungeon entrance", 4, [3, 5], [], [Potion("health potion", 10)], [Enemy("Evil Wizard", 10, 20, 8, 5, 0.8, "\"wawa I am here to steal your beans\"")])
 location5.description = "\nYou find yourself at the entrance of the Darkwood dungeon, a few menacing creatures guard the way. What do you do?\n"
-location6 = Location("dungeon", 5, [4], [], [], [Enemy("Slime Blob", 20, 15, 10, 8, 0.5, "\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\""), Enemy("Giant Spider", 12, 25, 15, 6, 0.9, "\"Ah, fresh blood, I had been waiting for this\""), Enemy("Zombie", 15, 18, 12, 7, 0.55, "\"Greetings fellow humanoid, I bid you farewell as I must consume the flesh on your person\""), Enemy("Dragon", 50, 50, 50, 10, 0.8, "Muahahahah")])
+location6 = Location("dungeon", 5, [4], [], [], [Enemy("Slime Blob", 20, 15, 10, 8, 0.5, "\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\""), Enemy("Giant Spider", 12, 25, 15, 6, 0.9, "\"Ah, fresh blood, I had been waiting for this\""), Enemy("Zombie", 15, 18, 12, 7, 0.55, "\"Greetings fellow humanoid, I bid you farewell as I must consume the flesh on your person\""), Enemy("Dragon", 50, 50, 50, 10, 0.8, "Muahahahah >:)")])
 location6.description = "\nYou find yourself deep inside the Darkwood dungeon, many creatures threatening to attack you. What do you do?\n"
 locations = [location1, location2, location3, location4, location5, location6]
 
