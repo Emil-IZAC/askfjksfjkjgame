@@ -12,6 +12,7 @@ class Player:
         self.fightingEnemy = None
         self.weapons = []
         self.potions = []
+        self.talkingNPC = None
 
     def Heal(self, hp):
         self.hp += hp
@@ -36,6 +37,16 @@ class Location:
 class NPC:
     def __init__(self, name):
         self.name = name
+        self.sentence = ""
+        self.interactions = []
+        self.postInteractions = []
+        self.interactionCount = 0
+        self.hasTalked = False
+
+class Interaction:
+    def __init__(self, answers, responses):
+        self.answers = answers
+        self.responses = responses
 
 class Object:
     def __init__(self, name):
@@ -98,10 +109,22 @@ location6 = Location("dungeon", 5, [4], [], [], [Enemy("Slime Blob", 20, 15, 10,
 location6.description = "\nYou find yourself deep inside the Darkwood dungeon, many creatures threatening to attack you. What do you do?\n"
 locations = [location1, location2, location3, location4, location5, location6]
 
+location1.npcList[0].sentence = "\"Hey there young traveler, what brings you here?\"\n"
+location1.npcList[0].interactions.append(Interaction(["\"I want to explore this forest\"", "\"I don't know, I got lost\"", "\"I don't need your help, get out of my way!\""], ["\"Well, you'll need this sword to explore safely! Many dangers lie ahead...\"\n", "\"Oh, well if you're going in anyway, be careful, here's a sword to help you fight!\"\n", "\"Very well, good luck and don't die!\"", 0]))
+location1.npcList[0].interactions.append(Interaction(["\"Wow, thanks!\" (+1 sword)", "\"I don't need it\""], ["\"You're welcome! Please return it to me when you're finished however, this sword is very important to me.\"\n", 1, "\"Ah, well in that case good luck and don't die!\"\n"]))
+location1.npcList[0].postInteractions.append(Interaction(["Yes (quit game)", "No"], ["Goodbye adventurer!\n", -1, "Ah, good luck out there then!\n"]))
+
+location4.npcList[0].sentence = "\"Greetings fellow adventurer, looks like you're badly injured! I have potions to sell if you're interested!\nOnly 10 gold pieces for a health potion (+10 hp), and 18 gold pieces for a mega health potion! (+20 hp)\"\n"
+location4.npcList[0].interactions.append(Interaction(["\"I'll take one health potion!\"", "\"I'll take one mega health potion!\"", "\"I'm good, thanks!\""], ["\"Anything else?\"\n", 2, "\"Anything else?\"\n", 3, "\"No problem, stop by anytime!\"", 0]))
+
+location4.npcList[1].sentence = "\"My dad was a famous adventurer, and he got killed by the dragon in that cave... You'll never be as strong as him, I think you should leave. You'll never beat this dragon, trust me.\"\n"
+location4.npcList[1].interactions.append(Interaction(["\"I don't care for you threats, I can do this!\"", "\"If I beat the dragon, I'm your new dad, deal?\""], ["\"Ok, knock yourself out\"\n", "\"Deal. You'll never beat him anyway\"\n"]))
+
 inCombat = False
+inDialogue = False
 hasGameEnded = False
 while hasGameEnded == False:
-    print("------------------------------------------------------------------------------")
+    
     currentLocation = locations[player.location]
     
     print("Health: " + str(player.hp) + "/" + str(player.maxHp) + "\nExperience: " + str(player.xp) + "/" + str(player.maxXp) + " (level " + str(player.level) + ")\nGold: " + str(player.gold) + " coins\n")
@@ -123,7 +146,8 @@ while hasGameEnded == False:
                 print("- " + player.potions[i].name + " ; +" + str(player.potions[i].healPoints) + " hp : \"" + str(i + number) + "\"\n")
                 potionInputs.append(str(i + number))
         print("\nOther actions:\n\n- escape combat (50% chance) : \"e\"\n\n- quit game : \"f\"\n")
-        playerInput = input()
+        playerInput = input("your input: ")
+        print("------------------------------------------------------------------------------")
         if playerInput == "f":
             hasGameEnded = True
         elif playerInput == "e":
@@ -166,7 +190,67 @@ while hasGameEnded == False:
                     hasGameEnded = True
             else:
                 print("It misses!\n")
-        
+
+
+    elif inDialogue:
+        correctInteractions = player.talkingNPC.interactions
+        if player.talkingNPC.hasTalked:
+            correctInteractions = player.talkingNPC.postInteractions
+        print("Talking to :" + player.talkingNPC.name + "\n")
+        answerInputs = []
+        if player.talkingNPC.interactionCount == 0:
+            print(player.talkingNPC.sentence)
+        for i in range(len(correctInteractions[player.talkingNPC.interactionCount].answers)):
+            print("- " + correctInteractions[player.talkingNPC.interactionCount].answers[i] + " : \"" + str(i) + "\"")
+            answerInputs.append(str(i))
+        playerInput = input("your input: ")
+        print("------------------------------------------------------------------------------")
+        if playerInput == "f":
+            hasGameEnded = True
+        elif playerInput in answerInputs:
+            numbersOffset = 0
+            responsesIterator = 0
+            while responsesIterator - numbersOffset <= int(playerInput):
+                if type(correctInteractions[player.talkingNPC.interactionCount].responses[responsesIterator]) == int:
+                    numbersOffset += 1
+                responsesIterator += 1
+            print(correctInteractions[player.talkingNPC.interactionCount].responses[int(playerInput) + numbersOffset])
+            if len(correctInteractions[player.talkingNPC.interactionCount].responses) > int(playerInput) + numbersOffset + 1:
+                if type(correctInteractions[player.talkingNPC.interactionCount].responses[int(playerInput) + numbersOffset + 1]) == int:
+                    specialNumber = correctInteractions[player.talkingNPC.interactionCount].responses[int(playerInput) + numbersOffset + 1]
+                    if specialNumber == -1:
+                        hasGameEnded = True
+                    elif specialNumber == 0:
+                        inDialogue = False
+                    elif specialNumber == 1:
+                        print("You now have a sword! (3 dmg)\n")
+                        player.weapons.append(Weapon("Sword", 3))
+                    elif specialNumber == 2:
+                        if player.gold >= 10:
+                            print("You now have a potion! (+10 hp)\n")
+                            player.potions.append(Potion("health potion", 10))
+                            player.gold -= 10
+                        else:
+                            print("You don't have enough gold to buy this!\n")
+                    elif specialNumber == 3:
+                        if player.gold >= 20:
+                            print("You now have a mega potion! (+20 hp)\n")
+                            player.potions.append(Potion("mega health potion", 20))
+                            player.gold -= 20
+                        else:
+                            print("You don't have enough gold to buy this!\n")
+            player.talkingNPC.interactionCount += 1
+            if player.talkingNPC.interactionCount > len(correctInteractions) - 1:
+                inDialogue = False
+                player.talkingNPC.interactionCount = 0
+
+                if player.talkingNPC.name == "Maurice": #very hacky but whatever
+                    player.talkingNPC.sentence = "Hey there young traveler, ready to leave?\n"
+                    player.talkingNPC.hasTalked = True
+        else:
+            print("invalid input")
+
+
     else:
         print(currentLocation.description)
         number = 0
@@ -197,13 +281,15 @@ while hasGameEnded == False:
                 print("- " + currentLocation.enemyList[i].name + " : \"" + str(i + number) + "\"")
                 enemyInputs.append(str(i + number))
         print("\nOther actions:\n\n- quit game : \"f\"\n")
-        playerInput = input()
+        playerInput = input("your input: ")
+        print("------------------------------------------------------------------------------")
         if playerInput == "f":
             hasGameEnded = True
         elif playerInput in locationInputs:
             player.location = currentLocation.availableLocationsIndexList[int(playerInput)]
         elif playerInput in npcInputs:
-            print("talk to npc")
+            inDialogue = True
+            player.talkingNPC = currentLocation.npcList[int(playerInput) - len(currentLocation.availableLocationsIndexList)]
         elif playerInput in objectInputs:
             player.potions.append(currentLocation.objectList[int(playerInput) - len(currentLocation.availableLocationsIndexList) - len(currentLocation.npcList)])
             print(str(int(playerInput) - len(currentLocation.availableLocationsIndexList) - len(currentLocation.npcList)))
